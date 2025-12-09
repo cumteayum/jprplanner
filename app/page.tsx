@@ -38,11 +38,11 @@ export default function Home() {
   function sendEmail() {
     if (typeof window !== "undefined") {
       console.log("Sending email:", msg);
-      emailjs.init(process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY);
+      emailjs.init(process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!);
       emailjs
         .send(
-          process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID,
-          process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID,
+          process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
+          process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
           { msg },
         )
 
@@ -406,41 +406,6 @@ export default function Home() {
     </SmoothScroll>
   );
 }
-
-const AudioPlayer = ({
-  isPlaying,
-  toggle,
-}: {
-  isPlaying: boolean;
-  toggle: () => void;
-}) => {
-  return (
-    <button
-      onClick={toggle}
-      className="fixed bottom-8 right-8 z-[80] bg-white text-black p-4 rounded-full shadow-2xl hover:scale-110 transition-transform flex items-center gap-2"
-    >
-      {isPlaying ? (
-        <>
-          <div className="flex gap-1 h-3 items-end">
-            {[1, 2, 3].map((i) => (
-              <motion.div
-                key={i}
-                animate={{ height: ["20%", "100%", "20%"] }}
-                transition={{ repeat: Infinity, duration: 0.5, delay: i * 0.1 }}
-                className="w-1 bg-black rounded-full"
-              />
-            ))}
-          </div>
-          <span className="text-xs font-bold uppercase tracking-widest ml-2">
-            Frank Ocean
-          </span>
-        </>
-      ) : (
-        <VolumeX size={20} />
-      )}
-    </button>
-  );
-};
 
 const SmoothScroll = ({ children }: { children: React.ReactNode }) => {
   return (
