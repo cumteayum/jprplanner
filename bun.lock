@@ -17,6 +17,7 @@
         "next": "16.0.8",
         "r3f": "^1.0.0",
         "react": "19.2.1",
+        "react-card-flip": "^1.2.3",
         "react-dom": "19.2.1",
         "sass": "^1.95.0",
         "three": "^0.181.2",
@@ -855,6 +856,8 @@
     "r3f": ["r3f@1.0.0", "", {}, "sha512-Arx1PH27IMNf/LXz54OreO7r13XRRVsTIaePVvlgNZXjzgUrJE7jkCx6GjpLZ1cdPDkA4MhiFiz6uYi71vGt7A=="],
 
     "react": ["react@19.2.1", "", {}, "sha512-DGrYcCWK7tvYMnWh79yrPHt+vdx9tY+1gPZa7nJQtO/p8bLTDaHp4dzwEhQB7pZ4Xe3ok4XKuEPrVuc+wlpkmw=="],
+
+    "react-card-flip": ["react-card-flip@1.2.3", "", { "peerDependencies": { "react": "^18.2.0", "react-dom": "^18.2.0" } }, "sha512-yb8+yyeTf5UVlZ/FC78XDgxYeWhgA0W28OXNB31LjiFeY1Y2kFhLP7bFiED4KNaRWKjaafT74G38XU53a6eIuw=="],
 
     "react-dom": ["react-dom@19.2.1", "", { "dependencies": { "scheduler": "^0.27.0" }, "peerDependencies": { "react": "^19.2.1" } }, "sha512-ibrK8llX2a4eOskq1mXKu/TGZj9qzomO+sNfO98M6d9zIPOEhlBkMkBUBLd1vgS0gQsLDBzA+8jJBVXDnfHmJg=="],
 
