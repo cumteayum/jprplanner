@@ -1,8 +1,7 @@
 "use client";
-import Image from "next/image";
+
 import emailjs from "@emailjs/browser";
-import mainLogo from "@/public/logo.jpg";
-import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
+import React, { useLayoutEffect, useState, useEffect, useRef } from "react";
 import {
   motion,
   AnimatePresence,
@@ -13,14 +12,21 @@ import {
 } from "framer-motion";
 import { ReactLenis } from "@studio-freight/react-lenis";
 import {
-  ArrowDown,
   ArrowUpRight,
+  ArrowDown,
   Calendar as CalendarIcon,
   Heart,
   Play,
   X,
-  MapPin,
+  Lock,
+  Disc,
+  Music,
+  Check,
+  Brain,
 } from "lucide-react";
+import Image from "next/image";
+import ReactCardFlip from "react-card-flip";
+import mainLogo from "@/public/logo.jpeg";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import clsx from "clsx";
@@ -29,211 +35,396 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-export default function Home() {
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [msg, setMsg] = useState("");
-  const [isLoaded, setIsLoaded] = useState(false);
+// --- UTILS ---
+const SmoothScroll = ({ children }: { children: React.ReactNode }) => (
+  <ReactLenis root options={{ lerp: 0.1, duration: 1.5, smoothWheel: true }}>
+    {children}
+  </ReactLenis>
+);
 
-  function sendEmail() {
-    if (typeof window !== "undefined") {
-      console.log("Sending email:", msg);
-      emailjs.init(process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!);
-      emailjs
-        .send(
-          process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
-          process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
-          { msg },
-        )
+// --- 1. PRELOADER (LIQUID TEXT) ---
+const Preloader = ({ onFinish }: { onFinish: () => void }) => {
+  return (
+    <motion.div
+      initial={{ y: 0 }}
+      animate={{ y: "-100%" }}
+      transition={{ duration: 1, ease: [0.76, 0, 0.24, 1], delay: 3.5 }}
+      onAnimationComplete={onFinish}
+      className="fixed inset-0 z-[100] bg-[#02040a] flex items-center justify-center"
+    >
+      <div className="relative">
+        {/* Outline Text */}
+        <h1 className="text-6xl md:text-8xl font-serif italic text-zinc-800 tracking-widest absolute inset-0 pointer-events-none">
+          The Archive.
+        </h1>
+        {/* Filled Text (Animated Width) */}
+        <motion.h1
+          initial={{ width: 0 }}
+          animate={{ width: "100%" }}
+          transition={{ duration: 3, ease: "easeInOut" }}
+          className="text-6xl md:text-8xl font-serif italic text-white tracking-widest overflow-hidden whitespace-nowrap relative z-10"
+        >
+          The Archive.
+        </motion.h1>
+      </div>
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 2.5 }}
+        className="absolute bottom-10 text-[10px] text-zinc-500 font-mono tracking-[0.3em] uppercase"
+      >
+        Access Granted: Kanak
+      </motion.p>
+    </motion.div>
+  );
+};
 
-        .then(
-          (result) => {
-            console.log(result.text);
-          },
-          (error) => {
-            console.log(error.text);
-          },
-        );
-    }
-  }
+// --- 2. WIDGETS ---
 
-  function handleContractSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setIsSubmitted(true);
-    sendEmail();
+// THE DOSSIER (Flip Card)
+const Dossier = () => {
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [submit, setIsSubmit] = useState(false);
 
-    setTimeout(() => {
-      window.location.href =
-        "https://wa.me/917357131408?text=I%20got%20the%20receipt.";
-    }, 4000);
-  }
-
-  // --- MOCK DATA ---
-  const items = [
-    {
-      id: "muse",
-      col: "md:col-span-2",
-      row: "md:row-span-2",
-      title: "The Muse",
-      bg: "bg-zinc-900",
-      content: (
-        <div className="relative w-full h-full group overflow-hidden">
+  return (
+    <div
+      className="w-full h-full cursor-pointer group perspective-1000"
+      onClick={() => setIsFlipped(!isFlipped)}
+    >
+      <ReactCardFlip
+        isFlipped={isFlipped}
+        flipDirection="horizontal"
+        containerStyle={{ height: "100%", width: "100%" }}
+      >
+        {/* FRONT */}
+        <div className="relative w-full h-full overflow-hidden rounded-[2rem] bg-zinc-900 border border-white/10">
           <Image
             src={mainLogo}
             alt="Muse"
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-60 group-hover:opacity-40"
+            fill
+            className="object-cover opacity-60 group-hover:opacity-40 transition-all duration-500"
           />
           <div className="absolute inset-0 flex items-center justify-center">
-            <h2 className="text-5xl md:text-7xl font-serif italic text-white opacity-0 group-hover:opacity-100 transition-opacity duration-500 translate-y-10 group-hover:translate-y-0">
-              You should get this one done.
+            <h2 className="text-5xl md:text-7xl font-serif italic text-white mix-blend-overlay">
+              Kanak.
             </h2>
           </div>
+          <div className="absolute bottom-6 right-6 bg-black/50 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
+            <span className="text-[10px] uppercase font-bold tracking-widest text-zinc-300">
+              Tap to Analyze
+            </span>
+          </div>
         </div>
-      ),
+
+        {/* BACK */}
+        <div className="w-full h-full bg-[#0f1115] rounded-[2rem] p-8 border border-white/10 flex flex-col justify-between relative overflow-hidden">
+          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 pointer-events-none"></div>
+          <div>
+            <p className="text-[10px] uppercase font-bold text-zinc-500 tracking-widest mb-4">
+              Subject Analysis
+            </p>
+            <div className="space-y-4 font-mono text-sm">
+              <div className="flex justify-between border-b border-zinc-800 pb-2">
+                <span className="text-zinc-400">Chaos Level</span>
+                <span className="text-red-500 font-bold">CRITICAL (99%)</span>
+              </div>
+              <div className="flex justify-between border-b border-zinc-800 pb-2">
+                <span className="text-zinc-400">Status</span>
+                <span className="text-purple-400">Compromised</span>
+              </div>
+              <div className="flex justify-between border-b border-zinc-800 pb-2">
+                <span className="text-zinc-400">Weakness</span>
+                <span className="text-white">Ishan...presumably</span>
+              </div>
+            </div>
+          </div>
+          <div className="text-right">
+            <h3 className="text-4xl font-serif italic text-zinc-700">
+              Classified.
+            </h3>
+          </div>
+        </div>
+      </ReactCardFlip>
+    </div>
+  );
+};
+
+// THE QUIZ (Gatekeeper)
+const TheQuiz = ({ onUnlock }: { onUnlock: () => void }) => {
+  const [step, setStep] = useState(0);
+  const [failed, setFailed] = useState(false);
+
+  const handleAnswer = (isCorrect: boolean) => {
+    if (isCorrect) {
+      if (step === 2) onUnlock();
+      else setStep((s) => s + 1);
+    } else {
+      setFailed(true);
+      setTimeout(() => setFailed(false), 1000); // Shake effect reset
+    }
+  };
+
+  const questions = [
+    { q: "Who is the prize?", a: ["Mrs. Nagar", "Mr. Nagar"], correct: 0 }, // 1 = Me (You)
+    {
+      q: "Nobody knows to know about our little secret",
+      a: ["Yes", "No, they need to"],
+      correct: 0,
+    }, // 1 = Tabs (Chaos choice) or Spaces (Dev choice). Let's say Tabs for React.
+    {
+      q: "Are you gonna cheat on your 'boyfriend' ?",
+      a: ["Yes", "No"],
+      correct: 0,
+    },
+  ];
+
+  if (step > 2)
+    return (
+      <div className="h-full w-full bg-green-500 flex flex-col items-center justify-center p-6 text-black">
+        <Check size={48} />
+        <p className="font-bold uppercase tracking-widest mt-2">
+          Access Granted
+        </p>
+      </div>
+    );
+
+  return (
+    <motion.div
+      animate={failed ? { x: [-10, 10, -10, 10, 0] } : {}}
+      className="h-full w-full bg-zinc-900 flex flex-col justify-between p-6 relative overflow-hidden"
+    >
+      <div className="z-10">
+        <div className="flex items-center gap-2 mb-2">
+          <Brain size={14} className="text-purple-500" />
+          <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+            Security Check
+          </p>
+        </div>
+        <h3 className="text-xl font-serif italic text-white">
+          {questions[step].q}
+        </h3>
+      </div>
+
+      <div className="flex gap-2 z-10">
+        {questions[step].a.map((ans, i) => (
+          <button
+            key={i}
+            onClick={() => handleAnswer(i === questions[step].correct)}
+            className="flex-1 py-3 bg-white/5 border border-white/10 rounded-xl text-sm font-bold hover:bg-white hover:text-black transition-all"
+          >
+            {ans}
+          </button>
+        ))}
+      </div>
+    </motion.div>
+  );
+};
+
+// THE PLAYLISTS
+const Playlists = () => {
+  const [active, setActive] = useState(0);
+  const moods = [
+    { name: "Late Night", color: "bg-blue-500", artist: "The Weeknd" },
+    { name: "Road Trip", color: "bg-orange-500", artist: "Arctic Monkeys" },
+    { name: "Toxic", color: "bg-red-500", artist: "Brent Faiyaz" },
+  ];
+
+  return (
+    <div className="h-full w-full bg-[#1DB954] p-6 flex flex-col justify-between text-black relative group overflow-hidden">
+      <div className="absolute right-[-30px] bottom-[-30px] text-[10rem] opacity-20 rotate-12 group-hover:rotate-45 transition-transform duration-700 pointer-events-none">
+        <Disc />
+      </div>
+
+      <div className="z-10 flex justify-between items-start">
+        <Music size={24} />
+        <div className="flex gap-1">
+          {moods.map((_, i) => (
+            <div
+              key={i}
+              onClick={(e) => {
+                e.stopPropagation();
+                setActive(i);
+              }}
+              className={`w-2 h-2 rounded-full cursor-pointer transition-all ${active === i ? "bg-black w-6" : "bg-black/30 hover:bg-black/50"}`}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="z-10">
+        <motion.div
+          key={active}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-1"
+        >
+          <p className="text-xs font-bold uppercase tracking-widest opacity-60">
+            Current Vibe
+          </p>
+          <h3 className="text-3xl font-bold leading-none">
+            {moods[active].name}
+          </h3>
+          <p className="font-serif italic opacity-80">{moods[active].artist}</p>
+        </motion.div>
+      </div>
+    </div>
+  );
+};
+
+// THE BOOK ME TICKET (Locked until Quiz passed)
+const Ticket = ({
+  isLocked,
+  onClick,
+}: {
+  isLocked: boolean;
+  onClick: () => void;
+}) => {
+  return (
+    <div
+      className={`h-full flex flex-col justify-between p-6 relative bg-white text-zinc-900 transition-all duration-500 ${isLocked ? "blur-sm grayscale pointer-events-none opacity-50" : ""}`}
+    >
+      {isLocked && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center">
+          <div className="bg-black text-white px-4 py-2 rounded-full flex items-center gap-2">
+            <Lock size={14} />
+            <span className="text-xs font-bold uppercase tracking-widest">
+              Locked
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Ticket Decoration */}
+      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-8 bg-[#02040a] rounded-r-full" />
+      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-8 bg-[#02040a] rounded-l-full" />
+      <div className="absolute left-4 right-4 top-1/2 h-[2px] border-t-2 border-dashed border-zinc-300" />
+
+      <div className="pb-8">
+        <h3 className="text-5xl font-bold tracking-tighter leading-none">
+          BOOK
+          <br />
+          ME.
+        </h3>
+      </div>
+      <div className="flex items-center gap-2 mt-2">
+        <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+        <p className="text-s text-[9px] uppercase tracking-widest border border-zinc-700 px-2 py-1 rounded-full font-mono uppercase text-zinc-500">
+          Slots Filling Fast
+        </p>
+      </div>
+
+      <div className="pt-8 flex flex-col gap-3">
+        <div className="flex justify-between items-end">
+          <div>
+            <p className="text-[10px] uppercase font-bold text-zinc-400">
+              Location
+            </p>
+            <p className="font-bold">Jaipur, RJ</p>
+          </div>
+          <div className="text-right">
+            <p className="text-[10px] uppercase font-bold text-zinc-400">
+              Price
+            </p>
+            <p className="font-bold">Your Soul</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="pt-8">
+        <button
+          onClick={onClick}
+          className="w-full py-4 bg-black text-white rounded-xl font-bold hover:scale-[1.02] active:scale-95 transition-all flex justify-between px-6 items-center group"
+        >
+          <span>Select Date</span>
+          <ArrowUpRight
+            size={20}
+            className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"
+          />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// --- 3. MAIN PAGE ---
+
+export default function Home() {
+  const selectedId = "contract";
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [submit, setSubmit] = useState(false);
+  const [mailed, setMailed] = useState(false);
+  const [msg, setMsg] = useState("");
+
+  const items = [
+    {
+      id: "muse",
+      col: "md:col-span-2 min-h-[300px] md:min-h-0",
+      row: "md:row-span-2",
+      content: <Dossier />,
     },
     {
       id: "spotify",
       col: "md:col-span-1",
       row: "md:row-span-1",
-      title: "Spotify",
-      bg: "bg-[#1DB954]",
-      content: (
-        <div className="h-full flex flex-col justify-between p-6 text-black relative overflow-hidden group">
-          <div className="absolute right-[-20px] bottom-[-20px] text-9xl opacity-20 rotate-12 group-hover:rotate-45 transition-transform duration-500">
-            <Play />
-          </div>
-          <div className="z-10">
-            <h3 className="text-xl font-bold text-white">Pink+White</h3>
-            <p className="font-medium opacity-80 text-white">Frank Ocean</p>
-          </div>
-          <div className="flex gap-1 h-8 items-end z-10">
-            {[1, 2, 3, 4].map((i) => (
-              <motion.div
-                key={i}
-                animate={{ height: ["20%", "100%", "20%"] }}
-                transition={{ repeat: Infinity, duration: 0.8, delay: i * 0.1 }}
-                className="w-2 bg-white rounded-full"
-              />
-            ))}
-          </div>
-        </div>
-      ),
+      content: <Playlists />,
     },
     {
-      id: "ego",
+      id: "quiz",
       col: "md:col-span-1",
       row: "md:row-span-1",
-      title: "Ego",
-      bg: "bg-zinc-900",
-      content: <EgoGauge />,
+      content: <TheQuiz onUnlock={() => setIsUnlocked(true)} />,
     },
     {
       id: "calendar",
-      col: "md:col-span-1",
+      col: "md:col-span-1 min-h-[300px] md:min-h-0",
       row: "md:row-span-2",
-      title: "Calendar",
-      bg: "bg-blue-500",
-      text: "text-zinc-900",
       content: <CalendarCountdown />,
-    },
+    }, // Use Calendar
     {
       id: "contract",
-      col: "md:col-span-2",
+      col: "md:col-span-2 min-h-[300px] md:min-h-0",
       row: "md:row-span-1",
-      title: "Book Me",
-      bg: "bg-yellow-200",
-      text: "text-zinc-900",
       content: (
-        <div className="h-full flex mt-3 flex-col justify-between p-6 relative">
-          {/* Ticket styling */}
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-8 bg-[#02040a] rounded-r-full" />
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-8 bg-[#02040a] rounded-l-full" />
-          <div className="absolute left-4 right-4 top-1/2 h-[2px] border-t-2 border-dashed border-zinc-300" />
-
-          <div className="pb-8">
-            <h3 className="text-4xl font-bold tracking-tighter leading-none">
-              BOOK
-              <br />
-              ME.
-            </h3>
-            <div className="flex items-center gap-2 mt-2">
-              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              <p className="text-s text-[9px] uppercase tracking-widest border border-zinc-700 px-2 py-1 rounded-full font-mono uppercase text-zinc-500">
-                Slots Filling Fast
-              </p>
-            </div>
-          </div>
-
-          <div className="pt-8 flex flex-col gap-3">
-            <div className="flex justify-between items-end">
-              <div>
-                <p className="text-[10px] uppercase font-bold text-zinc-400">
-                  Location
-                </p>
-                <p className="font-bold">Jaipur, RJ</p>
-              </div>
-              <div className="text-right">
-                <p className="text-[10px] uppercase font-bold text-zinc-400">
-                  Price
-                </p>
-                <p className="font-bold">Your Soul</p>
-              </div>
-            </div>
-
-            {/* FIX: Removed onClick here. The parent Div handles the click. */}
-            <button className="w-full py-3 bg-black text-white rounded-xl font-bold text-sm hover:scale-[1.02] active:scale-95 transition-all flex justify-between px-4 pointer-events-none">
-              <span>Select Date</span>
-              <span>→</span>
-            </button>
-          </div>
-        </div>
+        <Ticket isLocked={!isUnlocked} onClick={() => setSubmit(true)} />
       ),
     },
   ];
-
-  const selectedItem = items.find((i) => i.id === selectedId);
 
   return (
     <SmoothScroll>
       <Cursor />
       <Preloader onFinish={() => setIsLoaded(true)} />
 
+      {/* Noise */}
       <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-50 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
 
-      <main className="min-h-screen bg-[#02040a] text-[#fafafa] selection:bg-purple-500 selection:text-white">
-        {/* HEADER & GRID */}
+      <main className="min-h-screen bg-[#02040a] text-[#fafafa] selection:bg-purple-500 selection:text-white pb-32">
+        {/* HEADER */}
         <section className="min-h-screen p-4 md:p-12 flex flex-col gap-12">
           <motion.header
             initial={{ opacity: 0, y: 50 }}
             animate={isLoaded ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 1, delay: 0.5 }}
-            className="mt-12"
+            className="mt-20"
           >
-            <h1 className="text-[14vw] font-serif leading-[0.8] text-transparent bg-clip-text bg-gradient-to-r from-white to-zinc-500">
-              Kanak's <br />
-              <span className="font-sans font-bold tracking-tighter text-white">
-                Archive.
-              </span>
+            <h1 className="text-[10vw] font-serif leading-[0.8] text-white mix-blend-difference">
+              The Archive.
             </h1>
-            <p className="mt-8 text-xl text-zinc-400 max-w-lg leading-relaxed">
-              A digital collection of chaos, beauty, and mixed signals. Curated
-              by{" "}
-              <span className="text-white border-b border-white/30">
-                Ishan Nagar.
-              </span>
+            <p className="mt-8 text-xl text-zinc-500 max-w-lg font-mono">
+              [CONFIDENTIAL] <br /> Subject: Kanak.
             </p>
           </motion.header>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-3 gap-6 h-auto md:h-[80vh]">
+          <div className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-3 gap-4 auto-rows-auto md:h-[85vh]">
             {items.map((item, i) => (
               <motion.div
                 layoutId={item.id}
                 key={item.id}
-                onClick={() => setSelectedId(item.id)}
                 initial={{ opacity: 0, y: 20 }}
                 animate={isLoaded ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.5, delay: 0.8 + i * 0.1 }}
-                className={`${item.col} ${item.row} ${item.bg} ${item.text || "text-white"} bento-card rounded-[2rem] overflow-hidden relative cursor-pointer hover:ring-4 ring-white/20 transition-all duration-500 shadow-2xl`}
+                className={`${item.col} ${item.row} rounded-[2.5rem] overflow-hidden relative transition-all duration-500 shadow-2xl border border-white/5`}
               >
                 <div className="w-full h-full">{item.content}</div>
               </motion.div>
@@ -241,12 +432,16 @@ export default function Home() {
           </div>
         </section>
 
+        {/* GALLERY */}
         <Gallery />
         <Footer />
 
+        {/* MODAL (Contract Logic) */}
+        {/* (Paste your existing Modal logic here for 'contract') */}
+
         {/* --- FIXED MODAL OVERLAY --- */}
         <AnimatePresence>
-          {selectedId && selectedItem && (
+          {submit && (
             <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-12">
               {/* BACKDROP BLUR */}
               <motion.div
@@ -254,19 +449,19 @@ export default function Home() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 className="absolute inset-0 bg-black/90 backdrop-blur-xl cursor-pointer"
-                onClick={() => setSelectedId(null)}
+                onClick={() => setSubmit(false)}
               />
 
               {/* CARD CONTENT EXPANDED */}
               <motion.div
                 layoutId={selectedId}
-                className={`w-full max-w-4xl h-full ${selectedItem.bg} ${selectedItem.text || "text-white"} rounded-[3rem] overflow-hidden relative z-[110] border border-white/10`}
+                className={`w-full max-w-4xl h-full bg-gray-800 text-white rounded-[3rem] overflow-hidden relative z-[110] border border-white/10`}
               >
                 {/* CLOSE BUTTON */}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    setSelectedId(null);
+                    setSubmit(false);
                   }}
                   className="absolute top-8 right-8 w-12 h-12 bg-black/10 rounded-full flex items-center justify-center hover:bg-white hover:text-black transition-colors z-50"
                 >
@@ -275,17 +470,43 @@ export default function Home() {
 
                 {/* MODAL CONTENT LOGIC */}
                 <div className="p-12 md:p-24 h-full overflow-y-auto">
-                  {selectedId === "contract" ? (
+                  {submit ? (
                     // --- CONTRACT FORM / RECEIPT ---
                     <div className="h-full flex flex-col justify-center">
                       <AnimatePresence mode="wait">
-                        {!isSubmitted ? (
+                        {!mailed ? (
                           <motion.form
                             key="form"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0, y: -20 }}
-                            onSubmit={handleContractSubmit}
+                            onSubmit={(e) => {
+                              e.preventDefault();
+                              console.log(msg);
+                              if (typeof window !== "undefined") {
+                                console.log("Sending email:", msg);
+                                emailjs.init(
+                                  process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!,
+                                );
+                                emailjs
+                                  .send(
+                                    process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
+                                    process.env
+                                      .NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
+                                    { msg },
+                                  )
+
+                                  .then(
+                                    (result) => {
+                                      console.log(result.text);
+                                    },
+                                    (error) => {
+                                      console.log(error.text);
+                                    },
+                                  );
+                              }
+                              setMailed(true);
+                            }}
                             className="flex flex-col gap-8 max-w-md w-full mx-auto"
                           >
                             <h2 className="text-5xl font-serif italic mb-4">
@@ -390,11 +611,9 @@ export default function Home() {
                     // --- GENERIC CONTENT FOR OTHER CARDS ---
                     <div>
                       <h2 className="text-6xl font-serif italic mb-8">
-                        {selectedItem.title}
+                        Ignore
                       </h2>
-                      <p className="text-xl opacity-70">
-                        Detailed view for {selectedItem.title}.
-                      </p>
+                      <p className="text-xl opacity-70">ignore</p>
                     </div>
                   )}
                 </div>
@@ -407,117 +626,11 @@ export default function Home() {
   );
 }
 
-const SmoothScroll = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <ReactLenis root options={{ lerp: 0.1, duration: 1.5, smoothWheel: true }}>
-      {children}
-    </ReactLenis>
-  );
-};
-
-const Cursor = () => {
-  const [cursorText, setCursorText] = useState("");
-  const [isMagnetic, setIsMagnetic] = useState(false);
-
-  const mouse = { x: useMotionValue(0), y: useMotionValue(0) };
-  const smoothOptions = { damping: 20, stiffness: 300, mass: 0.5 };
-  const smoothMouse = {
-    x: useSpring(mouse.x, smoothOptions),
-    y: useSpring(mouse.y, smoothOptions),
-  };
-
-  const manageMouseMove = (e: MouseEvent) => {
-    const { clientX, clientY } = e;
-    mouse.x.set(clientX);
-    mouse.y.set(clientY);
-  };
-
-  const manageHover = (e: any) => {
-    const target = e.target as HTMLElement;
-    if (target.closest(".magnetic-target")) {
-      setIsMagnetic(true);
-      const text =
-        target.getAttribute("data-cursor-text") ||
-        target.closest(".magnetic-target")?.getAttribute("data-cursor-text");
-      setCursorText(text || "");
-    } else if (target.closest("a, button, .cursor-pointer, .bento-card")) {
-      setIsMagnetic(true);
-      setCursorText("");
-    } else {
-      setIsMagnetic(false);
-      setCursorText("");
-    }
-  };
-
-  useEffect(() => {
-    window.addEventListener("mousemove", manageMouseMove);
-    window.addEventListener("mouseover", manageHover);
-    return () => {
-      window.removeEventListener("mousemove", manageMouseMove);
-      window.removeEventListener("mouseover", manageHover);
-    };
-  }, []);
-
-  return (
-    <motion.div
-      style={{ left: smoothMouse.x, top: smoothMouse.y }}
-      className="fixed z-[9999] pointer-events-none -translate-x-1/2 -translate-y-1/2 mix-blend-difference"
-    >
-      <motion.div
-        animate={{
-          width: isMagnetic ? (cursorText ? 100 : 80) : 16,
-          height: isMagnetic ? (cursorText ? 100 : 80) : 16,
-        }}
-        transition={{ type: "tween", ease: "backOut", duration: 0.3 }}
-        className="bg-white rounded-full flex items-center justify-center"
-      >
-        {cursorText && (
-          <span className="text-black font-bold text-[10px] tracking-widest uppercase">
-            {cursorText}
-          </span>
-        )}
-      </motion.div>
-    </motion.div>
-  );
-};
-
-const Preloader = ({ onFinish }: { onFinish: () => void }) => {
-  return (
-    <motion.div
-      initial={{ y: 0 }}
-      animate={{ y: "-100%" }}
-      transition={{ duration: 1.5, ease: [0.76, 0, 0.24, 1], delay: 2 }}
-      onAnimationComplete={onFinish}
-      className="fixed inset-0 z-[100] bg-[#02040a] flex items-center justify-center"
-    >
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="flex flex-col items-center gap-4"
-      >
-        <h1 className="text-4xl md:text-6xl font-serif italic text-white tracking-widest">
-          The Archive.
-        </h1>
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: 200 }}
-          transition={{ duration: 1.5, ease: "easeInOut" }}
-          className="h-[1px] bg-white/50"
-        />
-        <p className="text-[10px] text-zinc-500 font-mono tracking-[0.3em] uppercase">
-          Loading Subject: Kanak
-        </p>
-      </motion.div>
-    </motion.div>
-  );
-};
-
-// --- 2. BENTO WIDGETS ---
-
 function EgoGauge() {
   const count = useMotionValue(96);
   const rounded = useTransform(count, Math.round);
   const [isCritical, setIsCritical] = useState(false);
+  const [msg, setMsg] = useState("");
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -841,3 +954,88 @@ const Footer = () => {
     </footer>
   );
 };
+
+export function Cursor() {
+  const [cursorText, setCursorText] = useState("");
+  const [isMagnetic, setIsMagnetic] = useState(false);
+  const [isActive, setIsActive] = useState(false); // Click state
+
+  // Physics
+  const mouse = { x: useMotionValue(0), y: useMotionValue(0) };
+  const smoothOptions = { damping: 20, stiffness: 300, mass: 0.5 };
+  const smoothMouse = {
+    x: useSpring(mouse.x, smoothOptions),
+    y: useSpring(mouse.y, smoothOptions),
+  };
+
+  const manageMouseMove = (e: MouseEvent) => {
+    const { clientX, clientY } = e;
+    mouse.x.set(clientX);
+    mouse.y.set(clientY);
+  };
+
+  const manageMouseDown = () => setIsActive(true);
+  const manageMouseUp = () => setIsActive(false);
+
+  const manageHover = (e: any) => {
+    const target = e.target as HTMLElement;
+
+    // 1. Check for Custom Magnetic Targets (Gallery Images)
+    if (target.closest(".magnetic-target")) {
+      setIsMagnetic(true);
+      const text =
+        target.getAttribute("data-cursor-text") ||
+        target.closest(".magnetic-target")?.getAttribute("data-cursor-text");
+      setCursorText(text || "OPEN");
+    }
+    // 2. Check for Links/Buttons
+    else if (target.closest("a, button, .cursor-pointer")) {
+      setIsMagnetic(true);
+      setCursorText(""); // Just snap, no text
+    } else {
+      setIsMagnetic(false);
+      setCursorText("");
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("mousemove", manageMouseMove);
+    window.addEventListener("mousedown", manageMouseDown);
+    window.addEventListener("mouseup", manageMouseUp);
+    window.addEventListener("mouseover", manageHover);
+
+    return () => {
+      window.removeEventListener("mousemove", manageMouseMove);
+      window.removeEventListener("mousedown", manageMouseDown);
+      window.removeEventListener("mouseup", manageMouseUp);
+      window.removeEventListener("mouseover", manageHover);
+    };
+  }, []);
+
+  return (
+    <motion.div
+      style={{ left: smoothMouse.x, top: smoothMouse.y }}
+      className="fixed z-[9999] pointer-events-none -translate-x-1/2 -translate-y-1/2 mix-blend-difference"
+    >
+      <motion.div
+        animate={{
+          width: isMagnetic ? (cursorText ? 100 : 60) : 32,
+          height: isMagnetic ? (cursorText ? 100 : 60) : 32,
+          scale: isMagnetic ? 3 : 1, // Shrink on click
+        }}
+        transition={{ type: "tween", ease: "backOut", duration: 0.3 }}
+        className="bg-white rounded-full flex items-center justify-center relative"
+      >
+        {cursorText && (
+          <motion.span
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-black font-bold text-[10px] tracking-widest uppercase"
+          >
+            {cursorText}
+          </motion.span>
+        )}
+      </motion.div>
+    </motion.div>
+  );
+}
